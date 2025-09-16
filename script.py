@@ -18,9 +18,6 @@ slides_source = obs.obs_source_create("xcomposite_input", "Presentation", None, 
 
 with open("scene.csv", mode="r") as file:  #have to update the correct path
     reader= csv.DictReader(file)
-    print("------")
-    print(typereader)
-    print("------")
     for row in reader:
         # print(f"{row['scene_name']} {row['scene_type']}  {row['png_file']}")
         scene_name = row['scene_name']
