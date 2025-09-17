@@ -1,6 +1,23 @@
 import obspython as obs
 import csv
 
+FullScreen_Pos = {'x': 0, 'y': 0}
+FullScreen_Scale = {'x': 1.5, 'y': 1.5}
+
+Sidebyside_Camera_Pos = {'x': 1258, 'y': 229}
+Sidebyside_Camera_Scale = {'x': 0.67890626192092896, 'y': 0.67916667461395264}
+
+Sidebyside_Slides_Pos = {'x': 38, 'y': 122}
+Sidebyside_Slides_Scale = {'x': 0.75208336114883423, 'y': 0.75185185670852661}
+
+
+def set_transform(scene_item, pos, scale):
+    vec = obs.vec2()
+    vec.x, vec.y = pos['x'], pos['y']
+    obs.obs_sceneitem_set_pos(scene_item, vec)
+    vec.x, vec.y = scale['x'], scale['y']
+    obs.obs_sceneitem_set_scale(scene_item, vec)
+
 
 #Camera Source Settings  
 device_id_str = "/dev/video0"
@@ -16,15 +33,17 @@ obs.obs_data_release(settings)
 #Slides Source Settings
 slides_source = obs.obs_source_create("xcomposite_input", "Presentation", None, None)
 
-with open("scene.csv", mode="r") as file:  #have to update the correct path
+with open("/home/mohdyasir/Desktop/IndiaFoss_Live_Streaming/obsscripting/scene.csv", mode="r") as file:
     reader= csv.DictReader(file)
-    for row in reader:
+    all_rows = list(reader)
+    all_rows.reverse()
+
+    for row in all_rows:
         # print(f"{row['scene_name']} {row['scene_type']}  {row['png_file']}")
         scene_name = row['scene_name']
         scene_type = row['scene_type']
         png_file = row['png_file']
         print(scene_name, scene_type, png_file)
-
 
         scene = obs.obs_scene_create(scene_name) 
 
@@ -39,7 +58,9 @@ with open("scene.csv", mode="r") as file:  #have to update the correct path
                 obs.obs_data_release(settings)
 
         elif scene_type == "speakeronly":
-            obs.obs_scene_add(scene, camera_source)
+            camera_item = obs.obs_scene_add(scene, camera_source)
+            set_transform(camera_item, FullScreen_Pos, FullScreen_Scale)
+
             if png_file:
                 settings = obs.obs_data_create()
                 obs.obs_data_set_string(settings, "file", png_file)
@@ -49,8 +70,11 @@ with open("scene.csv", mode="r") as file:  #have to update the correct path
                 obs.obs_data_release(settings)
 
         elif scene_type == "sidebyside":
-            obs.obs_scene_add(scene, camera_source)
-            obs.obs_scene_add(scene, slides_source)
+            camera_item = obs.obs_scene_add(scene, camera_source)
+            set_transform(camera_item, Sidebyside_Camera_Pos, Sidebyside_Camera_Scale)
+
+            slides_item = obs.obs_scene_add(scene, slides_source)
+            set_transform(slides_item, Sidebyside_Slides_Pos, Sidebyside_Slides_Scale)
             
             if png_file:
                 settings = obs.obs_data_create()
